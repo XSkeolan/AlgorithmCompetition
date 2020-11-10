@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1267
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algoritmic", "Algoritmic\Algoritmic.csproj", "{F346E8C5-F59F-40E0-84FD-3281B85820FF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F346E8C5-F59F-40E0-84FD-3281B85820FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F346E8C5-F59F-40E0-84FD-3281B85820FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F346E8C5-F59F-40E0-84FD-3281B85820FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F346E8C5-F59F-40E0-84FD-3281B85820FF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CEF4E8F9-146B-4B07-B26B-6E9100AF176D}
+	EndGlobalSection
+EndGlobal
