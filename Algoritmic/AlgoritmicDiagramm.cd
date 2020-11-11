@@ -12,9 +12,9 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="Algoritmic.DiagonalSnake">
-    <Position X="4.75" Y="6.25" Width="1.5" />
+    <Position X="2.75" Y="6.25" Width="3.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAACAKAAAAAgAAAAAAAAAAAAAoAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAACAKAAAAAgAAAAAAAAAAAAA4AAAAAAgAAA=</HashCode>
       <FileName>DiagonalSnake.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />

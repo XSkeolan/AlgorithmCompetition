@@ -12,21 +12,31 @@ namespace Algoritmic
 
         public DiagonalSnake(int size) : base(size) => Direction = Direction.RightTop;
         public DiagonalSnake(int size, Color color) : base(size, color) => Direction = Direction.RightTop;
-        public DiagonalSnake(int size, Color color, Direction direction) : this(size, color) { Direction = direction; }//добавить проверку на диагональныне направление
-        public DiagonalSnake(int size, Direction direction) : this(size) { Direction = direction; }
+        public DiagonalSnake(int size, Color color, Direction direction) : this(size, color) { CheckDirection(direction); Direction = direction; }
+        public DiagonalSnake(int size, Direction direction) : this(size) { CheckDirection(direction); Direction = direction; }
         public DiagonalSnake(int size, Point startPoint) : base(size, startPoint) => Direction = Direction.RightTop;
-        public DiagonalSnake(int size, Point startPoint, Direction direction) : this(size, startPoint) { Direction = direction; }
+        public DiagonalSnake(int size, Point startPoint, Direction direction) : this(size, startPoint) { CheckDirection(direction); Direction = direction; }
 
-        public void Play(int time)
+        private void CheckDirection(Direction direction)
         {
-            DateTime dTN = DateTime.Now;
-            while ((DateTime.Now - dTN).TotalSeconds < time)
+            switch(direction)
+            {
+                case Direction.Top:
+                case Direction.Right:
+                case Direction.Buttom:
+                case Direction.Left:
+                    throw new ArgumentException("Данная змея не может иметь такое направление", "direction");
+            }
+        }
+        private void BeginPlay(int time)
+        {
+            DateTime startDt = DateTime.Now;
+            while (time == 0 ? true : (DateTime.Now - startDt).TotalSeconds < time)
             {
                 switch (Direction)
                 {
                     case Direction.RightTop:
-                        //esli mi dostigaem ugla
-                        if (point.X == 1 && point.Y == 1)
+                        if (point == new Point(1,1))
                             Direction = Direction.Buttom;
                         else if (point.Y == 1)
                             Direction = Direction.RightButtom;
@@ -34,7 +44,7 @@ namespace Algoritmic
                             Direction = Direction.LeftTop;
                         break;
                     case Direction.LeftTop:
-                        if (point.X == 0 && point.Y == 1)
+                        if (point == new Point(0,1))
                             Direction = Direction.Right;
                         else if (point.X == 0)
                             Direction = Direction.RightTop;
@@ -102,18 +112,35 @@ namespace Algoritmic
                         point.Y++;
                         break;
                 }
-
             }
         }
 
-        public void PlayLooping()
+        public void Play(int time)
         {
-            throw new NotImplementedException();
+            if (time < 0)
+                throw new ArgumentOutOfRangeException();
+            if (time >= 0)
+            {
+                playing = BeginPlay;
+                loop = new Thread((o) =>
+                {
+                    int t = Convert.ToInt32(o);
+                    loopingResult = playing.BeginInvoke(t, null, null);
+                });
+                loop.Start(time);
+                state = States.PlayAlgoritm;
+            }
         }
+
+        public void PlayLooping() => Play(0);
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            state = States.Stoped;
+            //ожидаем окончание метода
+            playing.EndInvoke(loopingResult);
+            loop.Abort();
+            state = States.PlayMan;
         }
     }
 }
