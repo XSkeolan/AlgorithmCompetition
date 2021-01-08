@@ -42,16 +42,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\GameField.cs" />
     <Compile Include="DiagonalSnake.cs" />
     <Compile Include="Direction.cs" />
-    <Compile Include="IAlgorithm.cs" />
-    <Compile Include="IGameField.cs" />
-    <Compile Include="ISnake.cs" />
     <Compile Include="LineSnake.cs" />
+    <Compile Include="Model\IAlgorithm.cs" />
+    <Compile Include="Model\ISnake.cs" />
+    <Compile Include="Model\Snake.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CircleSnake.cs" />
-    <Compile Include="Snake.cs" />
     <Compile Include="ThunderSnake.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +59,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="SomeProblems.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="View\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Drawing;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Algoritmic
+namespace Algoritmic.Model
 {
     public interface ISnake
     {
@@ -9,10 +13,10 @@ namespace Algoritmic
         event EventHandler DirectionChanged;
 
         int Size { get; set; }
+        bool IsDied { get; }
         Color Color { get; }
         Direction Direction { get; set; }
-        Point Position { get; set; }
-
-        void Draw();
+        Point HeaderPosition { get; set; }
+        Point TailPosition { get; }
     }
 }
