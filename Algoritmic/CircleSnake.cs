@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Algoritmic
 {
-    public class CircleSnake : Snake, IAlgorithm
+    public class CircleSnake //: /*Snake, IAlgorithm*/
     {
         private readonly StartPosition startPosition = StartPosition.Center;
         /// <param name="time">Время для работы алгоритма в секундах</param>
@@ -14,15 +14,15 @@ namespace Algoritmic
             DateTime startDt = DateTime.Now;
             while((DateTime.Now - startDt).TotalSeconds < time)
             {
-                switch(Direction)
-                {
-                }
+                //switch(Direction)
+                //{
+                //}
             }
         }
 
         public CircleSnake()
         {
-            point = new Point(0, 0);
+            //point = new Point(0, 0);
             //Direction = 
         }
 

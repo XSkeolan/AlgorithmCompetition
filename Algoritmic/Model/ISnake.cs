@@ -11,6 +11,7 @@ namespace Algoritmic.Model
     {
         event EventHandler SizeChanged;
         event EventHandler DirectionChanged;
+        event EventHandler PositionChanged;
 
         int Size { get; set; }
         bool IsDied { get; }

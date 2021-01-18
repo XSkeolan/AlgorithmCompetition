@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Algoritmic
 {
-    public class ThunderSnake : Snake, IAlgorithm
+    public class ThunderSnake //: Snake, IAlgorithm
     {
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using Algoritmic.Controller;
 
@@ -20,7 +19,7 @@ namespace Algoritmic.Model
                 if (value < 1)
                     throw new ArgumentOutOfRangeException("Size", "Значение размера змеи должно быть не менее 1");
                 size = value;
-                SizeChanged.Invoke(this, new EventArgs());
+                SizeChanged?.Invoke(this, new EventArgs());
             }
         }
 
@@ -38,8 +37,7 @@ namespace Algoritmic.Model
             }
         }
 
-        public Color Color { get; } = Color.AliceBlue;
-
+        public Color Color { get; }
         public Direction Direction { get; set; }
         public Point HeaderPosition
         {
@@ -50,34 +48,58 @@ namespace Algoritmic.Model
 
         public Snake(GameField gameField, Point startPos, Direction direction = Direction.Top)
         {
-            if (startPos.X < 0 || startPos.Y < 0)
-                throw new ArgumentOutOfRangeException("startPos", "Координаты игрового поля начинаются с 0");
-            HeaderPosition = startPos;
+            if (startPos.X < 0 || startPos.Y < 0 || startPos.X > gameField.Width - 1 || startPos.Y > gameField.Height - 1)
+                throw new ArgumentOutOfRangeException("startPos", "Координаты игрового поля начинаются с 0 и не могут быть больше чем высота и длина игрового поля - 1");
             field = gameField;
+            HeaderPosition = startPos;
             Direction = direction;
+            SetTailPosition();
             Random rnd = new Random();
-            //добавить проверку на существование такого цвета и не равен ли он заднему фону
-            Color = Color.FromArgb(rnd.Next(50, 101), rnd.Next(0, 256), rnd.Next(0, 256), rnd.Next(2, 256));
+            do
+                Color = Color.FromArgb(rnd.Next(50, 101), rnd.Next(0, 256), rnd.Next(0, 256), rnd.Next(2, 256));
+            while (!CheckColor());
         }
         public Snake(GameField gameField, Point startPos, Direction direction, Color color)
         {
-            if (startPos.X < 0 || startPos.Y < 0)
-                throw new ArgumentOutOfRangeException("startPos", "Координаты игрового поля начинаются с 0");
-            HeaderPosition = startPos;
+            if (gameField == null)
+                throw new ArgumentNullException("gameField", "Игровое поле равон null");
+            if (startPos.X < 0 || startPos.Y < 0 || startPos.X > gameField.Height - 1 || startPos.Y > gameField.Width - 1)
+                throw new ArgumentOutOfRangeException("startPos", "Координаты игрового поля начинаются с 0 и не могут быть больше чем высота и длина игрового поля - 1");
             field = gameField;
+            HeaderPosition = startPos;
             Direction = direction;
+            SetTailPosition();
             Color = color;
         }
 
         public event EventHandler SizeChanged;
         public event EventHandler DirectionChanged;
+        public event EventHandler PositionChanged;
 
+        private void SetTailPosition()
+        {
+            switch(Direction)
+            {
+                case Direction.Top:
+                    tailPoint = new Point(HeaderPosition.X, HeaderPosition.Y - Size + 1);
+                    break;
+                case Direction.Buttom:
+                    tailPoint = new Point(HeaderPosition.X, HeaderPosition.Y + Size - 1);
+                    break;
+                case Direction.Left:
+                    tailPoint = new Point(HeaderPosition.X + Size - 1, HeaderPosition.Y);
+                    break;
+                case Direction.Right:
+                    tailPoint = new Point(HeaderPosition.X - Size + 1, HeaderPosition.Y);
+                    break;
+            }
+        }
         protected virtual void SetPosition(Point p)
         {
-            if (p.X < 0 || p.X > field.Width - 1)
-                throw new ArgumentOutOfRangeException("HeaderPosition.X", "Позиция по оси X должна быть положительной и не больше длинный игрового поля или 0");
-            if (p.Y < 0 || p.Y > field.Height -1)
-                throw new ArgumentOutOfRangeException("HeaderPosition.Y", "Позиция по оси Y должна быть положительной и не больше ширины игрового поля или 0");
+            //if (p.X < 0 || p.X > field.Width - 1)
+            //    throw new ArgumentOutOfRangeException("HeaderPosition.X", "Позиция по оси X должна быть положительной и не больше длинный игрового поля или 0");
+            //if (p.Y < 0 || p.Y > field.Height -1)
+            //    throw new ArgumentOutOfRangeException("HeaderPosition.Y", "Позиция по оси Y должна быть положительной и не больше ширины игрового поля или 0");
 
             Point delta = p - point;
             tailPoint += delta;
@@ -86,7 +108,11 @@ namespace Algoritmic.Model
 
         private bool CheckColor()
         {
-            return true;
+            int[,] f = field.GetField();
+            foreach(var c in f)
+                if (c == Color.ToArgb())
+                    return false;
+            return Color != field.BackGround;
         }
     }
 }

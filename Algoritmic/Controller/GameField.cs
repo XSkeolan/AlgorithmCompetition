@@ -21,13 +21,22 @@ namespace Algoritmic.Controller
         //-5 - бонус(пока не реализован)
         private Thread t;
         private List<IAlgorithm> alg;
-        private int initialCount;
+        private readonly int initialCount;
+        private Color backColor = Color.Green;
 
         public int Height { get; }
         public int Width { get; }
         public bool Bounce { get; } = false;
         public bool IsPlaying { get; private set; } = false;
-        public Color BackGround { get; set; } = Color.Green;
+        public Color BackGround
+        {
+            get => backColor;
+            set
+            {
+                backColor = value;
+                BackgroundChanged?.Invoke(this,new EventArgs());
+            }
+        }
         public Point[] Borders
         {
             get
@@ -48,21 +57,22 @@ namespace Algoritmic.Controller
                 throw new ArgumentOutOfRangeException("width", "Длина игрового поля должна быть больше 0");
             if (height < 0)
                 throw new ArgumentOutOfRangeException("height", "Высота игрового поля должна быть больше 0");
-            if (width * height < 25)
-                throw new ArgumentOutOfRangeException("width, height", "Площадь игрового поля должна быть не меньше 25 клеток");
+            //if (width * height < 25)
+            //    throw new ArgumentOutOfRangeException("width, height", "Площадь игрового поля должна быть не меньше 25 клеток");
 
             Width = width;
             Height = height;
-            field = new int[width, height];
+            field = new int[height, width];
 
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
+            for (int i = 0; i < height; i++)
+                for (int j = 0; j < width; j++)
                     field[i, j] = 0;
             Snakes = new List<ISnake>();
             alg = new List<IAlgorithm>();
             initialCount = 0;
+            BackgroundChanged?.Invoke(this, new EventArgs());
+            FieldChanged?.Invoke(this, new EventArgs());
         }
-
         public GameField(int width, int height, bool bonuce, int countSnake) : this(width, height)
         {
             if (countSnake < 1)
@@ -75,6 +85,9 @@ namespace Algoritmic.Controller
 
         public void AddSnake(IAlgorithm snake)
         {
+            if (snake == null)
+                throw new ArgumentNullException("snake", "Параметр snake равен null");
+            
             BeforeAdding();
             Random rnd = new Random();
             int x; //= rnd.Next(0, Width);
@@ -87,11 +100,14 @@ namespace Algoritmic.Controller
                 x = rnd.Next(0, Width);
                 y = rnd.Next(0, Height);
 
-                if (IsEmpty && field[x, y] != 0)
+                Point pos = PositionToArray(new Point(x, y));
+
+                if (IsEmpty && field[pos.X, pos.Y] != 0)
                     continue;
 
                 s = new Snake(this, new Point(x, y));
-                for(int i=5;i<9;i++)
+                s.Size = rnd.Next(1, Height < Width ? Height : Width);
+                for (int i = 5; i < 9; i++)
                 {
                     IsEmpty = true;
                     s.Direction = (Direction)i;
@@ -101,7 +117,10 @@ namespace Algoritmic.Controller
                             {
                                 if (y + s.Size < Height)
                                     for (int j = y; j < y + s.Size; j++)
-                                        IsEmpty = IsEmpty && field[x, j] == 0;
+                                    {
+                                        pos = PositionToArray(new Point(x, j));
+                                        IsEmpty = IsEmpty && field[pos.X,pos.Y] == 0;
+                                    }
                                 else
                                     IsEmpty = false;
                                 break;
@@ -109,8 +128,11 @@ namespace Algoritmic.Controller
                         case Direction.Left:
                             {
                                 if (x + s.Size < Width)
-                                    for(int j = x;j<x+s.Size;j++)
-                                        IsEmpty = IsEmpty && field[j, y] == 0;
+                                    for (int j = x; j < x + s.Size; j++)
+                                    {
+                                        pos = PositionToArray(new Point(j, y));
+                                        IsEmpty = IsEmpty && field[pos.X, pos.Y] == 0;
+                                    }
                                 else
                                     IsEmpty = false;
                                 break;
@@ -119,7 +141,10 @@ namespace Algoritmic.Controller
                             {
                                 if (x - s.Size > 0)
                                     for (int j = x; j > x - s.Size; j--)
-                                        IsEmpty = IsEmpty && field[j, y] == 0;
+                                    {
+                                        pos = PositionToArray(new Point(j, y));
+                                        IsEmpty = IsEmpty && field[pos.X, pos.Y] == 0;
+                                    }
                                 else
                                     IsEmpty = false;
                                 break;
@@ -128,7 +153,10 @@ namespace Algoritmic.Controller
                             {
                                 if (y - s.Size > 0)
                                     for (int j = y; j > y - s.Size; j--)
-                                        IsEmpty = IsEmpty && field[x, j] == 0;
+                                    {
+                                        pos = PositionToArray(new Point(x, j));
+                                        IsEmpty = IsEmpty && field[pos.X, pos.Y] == 0;
+                                    }
                                 else
                                     IsEmpty = false;
                                 break;
@@ -141,7 +169,6 @@ namespace Algoritmic.Controller
             while (!IsEmpty);
 
             Snakes.Add(s);
-            s.DirectionChanged += Snake_DirectionChanged;
             s.SizeChanged += Snake_SizeChanged;
             AddSnakeToField(s);
             alg.Add(snake);
@@ -153,27 +180,52 @@ namespace Algoritmic.Controller
             ISnake snake = (ISnake)sender;
             Point lastPoint = snake.TailPosition;
             int color = snake.Color.ToArgb();
-            
-        }
 
-        private void Snake_DirectionChanged(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
+            if (lastPoint == 0)
+                if (field[lastPoint.X + 1, lastPoint.Y] == color)
+                    field[lastPoint.X, lastPoint.Y + 1] = color;
+                else
+                    field[lastPoint.X + 1, lastPoint.Y] = color;
+            else if(lastPoint == new Point(Width-1,Height-1))
+                if (field[lastPoint.X - 1, lastPoint.Y] == color)
+                    field[lastPoint.X, lastPoint.Y - 1] = color;
+                else
+                    field[lastPoint.X - 1, lastPoint.Y] = color;
+            else if(lastPoint == new Point(0,Height-1))
+                if (field[lastPoint.X + 1, lastPoint.Y] == color)
+                    field[lastPoint.X, lastPoint.Y - 1] = color;
+                else
+                    field[lastPoint.X + 1, lastPoint.Y] = color;
+            else if(lastPoint == new Point(Width-1,0))
+                if (field[lastPoint.X - 1, lastPoint.Y] == color)
+                    field[lastPoint.X, lastPoint.Y + 1] = color;
+                else
+                    field[lastPoint.X - 1, lastPoint.Y] = color;
+            else
+                if (field[lastPoint.X + 1, lastPoint.Y] == color)
+                    field[lastPoint.X - 1, lastPoint.Y] = color;
+                else if (field[lastPoint.X - 1, lastPoint.Y] == color)
+                    field[lastPoint.X + 1, lastPoint.Y] = color;
+                else if (field[lastPoint.X, lastPoint.Y + 1] == color)
+                    field[lastPoint.X, lastPoint.Y - 1] = color;
+                else
+                    field[lastPoint.X, lastPoint.Y + 1] = color;
         }
 
         public void AddSnake(IAlgorithm snake, ISnake view)
         {
             BeforeAdding(view);
             Snakes.Add(view);
-            view.DirectionChanged += Snake_DirectionChanged;
+            view.SizeChanged += Snake_SizeChanged;
             AddSnakeToField(view);
             alg.Add(snake);
         }
 
         private void AddSnakeToField(ISnake s)
         {
-            int x = s.HeaderPosition.X;
-            int y = s.HeaderPosition.Y;
+            Point pos = PositionToArray(s.HeaderPosition);
+            int x = pos.X;
+            int y = pos.Y;
             switch (s.Direction)
             {
                 case Direction.Top:
@@ -201,8 +253,9 @@ namespace Algoritmic.Controller
                         break;
                     }
             }
+            FieldChanged?.Invoke(this, new EventArgs());
         }
-
+        private Point PositionToArray(Point p) => new Point(Height - 1 - p.Y, p.X);
         private void BeforeAdding(ISnake snake = null)
         {
             if (IsPlaying)
@@ -211,12 +264,15 @@ namespace Algoritmic.Controller
                 throw new ArgumentOutOfRangeException("Невозможно добавить змею! Превышен лимит количества змеек");
             if (snake != null)
             {
-                if (field[snake.HeaderPosition.X, snake.HeaderPosition.Y] != 0)
+                if (snake.Size < Width && snake.Size < Height)
+                    throw new InvalidOperationException("Невозможно добавить змею! Длинна змеи должна быть в границах от 0 до длины или ширины игрового поля");
+                Point pos = PositionToArray(snake.HeaderPosition);
+                if (field[pos.X, pos.Y] != 0)
                     throw new InvalidOperationException($"Змея со стартовой позицией {snake.HeaderPosition} не может быть добавлена, так как место занято другим объектом");
 
                 bool IsEmpty = true;
-                int x = snake.HeaderPosition.X;
-                int y = snake.HeaderPosition.Y;
+                int x = pos.X;
+                int y = pos.Y;
 
                 switch (snake.Direction)
                 {
@@ -296,7 +352,6 @@ namespace Algoritmic.Controller
                             field[i, j] = 0;
             }
         }
-
         public void ClearField()
         {
             if (IsPlaying)
@@ -306,7 +361,6 @@ namespace Algoritmic.Controller
                 for (int j = 0; j < field.GetLength(1); j++)
                     field[i, j] = 0;
         }
-
         public void Clear()
         {
             ClearField();
@@ -345,7 +399,11 @@ namespace Algoritmic.Controller
         public void SetBorders(params Point[] points)
         {
             for(int i=0;i<points.Length;i++)
-                field[points[i].X, points[i].Y] = 1;
+            {
+                Point p = PositionToArray(points[i]);
+                field[p.X, p.Y] = 1;
+            }
+            FieldChanged.Invoke(this, new EventArgs());
         }
 
         public void StopGame() => IsPlaying = false;
@@ -353,5 +411,6 @@ namespace Algoritmic.Controller
         public int[,] GetField() => field;
 
         public event EventHandler FieldChanged;
+        public event EventHandler BackgroundChanged;
     }
 }
